@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-lusb-1.0 -lcrypto -I. 
+CFLAGS=-DDEBUG -lusb-1.0 -lcrypto -I.
 
 .SILENT: pwnedDFU
 
