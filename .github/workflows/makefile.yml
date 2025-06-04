@@ -1,12 +1,6 @@
 name: Build ipwnder
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  schedule:
-    - cron: "0 0 * * 0"
+on: [push]
 
 jobs:
   build-libusb-linux:
@@ -57,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
           name: ipwnder-Linux-${{ matrix.arch.name }}
-          path: ipwnder
+          path: pwnedDFU
 
           if-no-files-found: warn
 
