@@ -118,6 +118,9 @@ static const device_identifier device_identifiers[] = {
 	{ "AppleTV3,2",  0x00, 0x8947 },
 	{ "AppleTV5,3",  0x34, 0x7000 },
 	{ "AppleTV6,2",  0x02, 0x8011 },
+	/* Apple Watch */
+	{ "Watch1,1",    0x02, 0x7002 },
+	{ "Watch1,2",    0x04, 0x7002 },
 	{ NULL,         -1,   -1,     }
 };
 
