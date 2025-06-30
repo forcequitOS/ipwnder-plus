@@ -19,9 +19,9 @@
 #define USB_TIMEOUT 1000
 
 typedef struct usb_device_t{
-	libusb_device_handle* handle;
-	int mode;
-	unsigned char serial[256];
+    libusb_device_handle* handle;
+    int mode;
+    unsigned char serial[256];
 }* usb_device_t;
 
 void usb_init();
