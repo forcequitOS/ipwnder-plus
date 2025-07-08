@@ -13,7 +13,6 @@ unsigned char trampoline64[] = {
     0x6f, 0x20, 0x6b, 0x69, // - 4
     0x6e, 0x2d, 0x69, 0x72, // - 8
     0x6f, 0x20, 0x6d, 0x6f, // - 12
-    
     0x73, 0x61, 0x69, 0x63  // - 16
 };
 
@@ -381,7 +380,6 @@ int get_payload_configuration(int cpid, char* identifier, unsigned char** payloa
         case 0x7002:
         case 0x8947:
         case 0x8950:
-
         case 0x8955:
             ret = add_trampoline(*payload, *payload_len, trampoline, trampoline_len);
             if(ret != 0) {
