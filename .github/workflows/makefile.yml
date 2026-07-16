@@ -34,7 +34,7 @@ jobs:
           cd ..
 
       - name: Build ipwnder
-        run: make -j$(nproc) LDFLAGS="-L/usr/local/lib -fuse-ld=lld" CC=clang LDFLAGS="-L/usr/local/lib /usr/local/lib/libusb-1.0.a -lpthread -ldl -lcrypto"
+        run: make -j$(nproc) LDFLAGS="-L/usr/local/lib -fuse-ld=lld" CC=clang LDFLAGS="-L/usr/local/lib /usr/local/lib/libusb-1.0.a -lpthread -ldl"
 
       - name: Zip ipwnder
         run: zip -r ipwnder_linux-${{ matrix.arch.name }}.zip ipwnder-plus
@@ -62,6 +62,8 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Build libusb
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LIBUSB_TAG=$(gh release view --repo libusb/libusb --json tagName -q .tagName)
           LIBUSB_VER=${LIBUSB_TAG#v}
