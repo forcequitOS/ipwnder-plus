@@ -21,10 +21,13 @@ jobs:
           sudo apt update
           sudo apt install -y aria2 libusb-1.0-0-dev clang lld
           sudo apt remove -y libssl-dev libusb-1.0-0-dev
-
-          aria2c https://github.com/libusb/libusb/releases/download/v1.0.28/libusb-1.0.28.tar.bz2
-          tar -xf libusb-1.0.28.tar.bz2
-          cd libusb-1.0.28
+          
+          LIBUSB_TAG=$(curl -s https://api.github.com/repos/libusb/libusb/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+          LIBUSB_VER=${LIBUSB_TAG#v}
+          
+          aria2c https://github.com/libusb/libusb/releases/download/${LIBUSB_TAG}/libusb-${LIBUSB_VER}.tar.bz2
+          tar -xf libusb-${LIBUSB_VER}.tar.bz2
+          cd libusb-${LIBUSB_VER}
           ./configure --disable-shared --enable-static --disable-udev LDFLAGS="-static"
           make -j$(nproc)
           sudo make install
@@ -34,7 +37,7 @@ jobs:
         run: make -j$(nproc) LDFLAGS="-L/usr/local/lib -fuse-ld=lld" CC=clang LIBS="-ldl -lusb-1.0 -pthread -lcrypto"
 
       - name: Zip ipwnder
-        run: zip -r ipwnder_linux-${{ matrix.arch.name }}.zip pwnedDFU
+        run: zip -r ipwnder_linux-${{ matrix.arch.name }}.zip ipwnder-plus
 
       - name: Update latest release
         env:
@@ -44,6 +47,52 @@ jobs:
             ipwnder_linux-${{ matrix.arch.name }}.zip \
             --clobber -R ${{ github.repository }}
 
+          gh release edit latest \
+            --title "Latest" \
+            --target ${{ github.sha }} -R ${{ github.repository }}
+  ipwnder-macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [arm64, x86_64]
+        
+    name: ipwnder-macos-${{ matrix.arch }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build libusb
+        run: |
+          LIBUSB_TAG=$(curl -s https://api.github.com/repos/libusb/libusb/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+          LIBUSB_VER=${LIBUSB_TAG#v}
+          curl -LO https://github.com/libusb/libusb/releases/download/${LIBUSB_TAG}/libusb-${LIBUSB_VER}.tar.bz2
+          tar -xf libusb-${LIBUSB_VER}.tar.bz2
+          cd libusb-${LIBUSB_VER}
+          ./configure --disable-shared --enable-static \
+            --host=${{ matrix.arch }}-apple-macos \
+            CC="clang -arch ${{ matrix.arch }}" \
+            --prefix=${{ github.workspace }}/libusb
+          make -j$(sysctl -n hw.logicalcpu)
+          make install
+          
+      - name: Build ipwnder
+        run: |
+          make -j$(sysctl -n hw.logicalcpu) \
+            CC=clang \
+            CFLAGS="-DDEBUG -I. -I${{ github.workspace }}/libusb/include -mmacosx-version-min=10.11 -arch ${{ matrix.arch }}" \
+            LDFLAGS="${{ github.workspace }}/libusb/lib/libusb-1.0.a -framework IOKit -framework CoreFoundation -framework Security"
+            
+      - name: Zip ipwnder
+        run: zip ipwnder_macos-${{ matrix.arch }}.zip ipwnder-plus
+        
+      - name: Update latest release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload latest \
+            ipwnder_macos-${{ matrix.arch }}.zip \
+            --clobber -R ${{ github.repository }}
+            
           gh release edit latest \
             --title "Latest" \
             --target ${{ github.sha }} -R ${{ github.repository }}
