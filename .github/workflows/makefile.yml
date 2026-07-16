@@ -1,5 +1,7 @@
 name: Build ipwnder
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   ipwnder-linux:
     strategy:
@@ -89,7 +91,7 @@ jobs:
           make -j$(sysctl -n hw.logicalcpu) \
             CC=clang \
             CFLAGS="-DDEBUG -I. -I${{ github.workspace }}/libusb/include -mmacosx-version-min=10.13 $ARCH_FLAG" \
-            LDFLAGS="${{ github.workspace }}/libusb/lib/libusb-1.0.a -framework IOKit -framework CoreFoundation -framework Security"
+            LDFLAGS="$ARCH_FLAG ${{ github.workspace }}/libusb/lib/libusb-1.0.a -framework IOKit -framework CoreFoundation -framework Security"
             
       - name: Zip ipwnder
         run: zip ipwnder_macos-${{ matrix.arch }}.zip ipwnder-plus
