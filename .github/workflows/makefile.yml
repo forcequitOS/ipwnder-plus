@@ -70,18 +70,25 @@ jobs:
           curl -LO https://github.com/libusb/libusb/releases/download/${LIBUSB_TAG}/libusb-${LIBUSB_VER}.tar.bz2
           tar -xf libusb-${LIBUSB_VER}.tar.bz2
           cd libusb-${LIBUSB_VER}
-          ./configure --disable-shared --enable-static \
-            --host=${{ matrix.arch }}-apple-macos \
-            CC="clang -arch ${{ matrix.arch }}" \
-            --prefix=${{ github.workspace }}/libusb
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            ./configure --disable-shared --enable-static \
+              --host=x86_64-apple-darwin \
+              CC="clang -arch x86_64" \
+              --prefix=${{ github.workspace }}/libusb
+          else
+            ./configure --disable-shared --enable-static \
+              --prefix=${{ github.workspace }}/libusb
+          fi
           make -j$(sysctl -n hw.logicalcpu)
           make install
           
       - name: Build ipwnder
         run: |
+          ARCH_FLAG=""
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then ARCH_FLAG="-arch x86_64"; fi
           make -j$(sysctl -n hw.logicalcpu) \
             CC=clang \
-            CFLAGS="-DDEBUG -I. -I${{ github.workspace }}/libusb/include -mmacosx-version-min=10.11 -arch ${{ matrix.arch }}" \
+            CFLAGS="-DDEBUG -I. -I${{ github.workspace }}/libusb/include -mmacosx-version-min=10.13 $ARCH_FLAG" \
             LDFLAGS="${{ github.workspace }}/libusb/lib/libusb-1.0.a -framework IOKit -framework CoreFoundation -framework Security"
             
       - name: Zip ipwnder
