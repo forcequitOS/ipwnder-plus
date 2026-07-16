@@ -1,5 +1,5 @@
 name: Build ipwnder
-on: [push]
+on: [push, workflow_dispatch]
 jobs:
   ipwnder-linux:
     strategy:
